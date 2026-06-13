@@ -1,7 +1,7 @@
-import ProductCatalog from '@/components/products/ProductCatalog';
+import ProductsClient from './ProductsClient';
 
 export const metadata = { title: 'Products — E-Commerce' };
 
 export default function ProductsPage() {
-  return <ProductCatalog />;
+  return <ProductsClient />;
 }

@@ -93,6 +93,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm run test
+
       - name: Type-check & Build
         run: npm run build
         env:

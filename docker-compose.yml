@@ -19,8 +19,11 @@ services:
     build:
       context: ./backend
       target: dev
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       DATABASE_SYNC: "true"
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
@@ -43,10 +46,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      target: production
+      target: dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-      API_URL: http://backend:3001
     depends_on:
       - backend
     ports:

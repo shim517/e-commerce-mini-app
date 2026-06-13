@@ -1,4 +1,4 @@
-import type { Product } from '@/types';
+import type { Product } from '@/domain/product';
 
 const CATEGORY_COLORS: Record<string, string> = {
   Electronics: 'bg-blue-100 text-blue-700',

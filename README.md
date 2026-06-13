@@ -18,12 +18,12 @@ A full-stack e-commerce product catalog built with **Next.js**, **NestJS**, and 
 
 #### Authentication & Session Management
 - **JWTs in httpOnly cookies** – tokens are never accessible to JavaScript, eliminating XSS-based token theft.
-- **Two-token pattern**: a short-lived access token (30 min) paired with a long-lived refresh token (7 days, stored in the DB).
-- **Inactivity timeout**: every authenticated API request updates a `lastActivityAt` timestamp on the refresh-token row. When an access token expires and the client requests a refresh, the backend rejects it if `now - lastActivityAt > 30 min`, forcing re-authentication.
-- **Persistent sessions**: the refresh-token cookie is not a session cookie (it has an explicit `maxAge`), so it survives browser restarts. The session stays alive as long as the user is active within 30-minute windows and the refresh token has not expired (7 days).
+- **Two-token pattern**: a short-lived access token (configurable via `ACCESS_TOKEN_EXPIRY`, default `1m`) paired with a long-lived refresh token (configurable via `REFRESH_TOKEN_EXPIRY_DAYS`, default `7` days, stored in the DB). The refresh token is rotated on every use.
+- **Inactivity timeout**: every authenticated API request updates a `lastActivityAt` timestamp on the refresh-token row. When an access token expires and the client requests a refresh, the backend rejects it if `now - lastActivityAt > INACTIVITY_TIMEOUT_MINUTES` (default 30 min), forcing re-authentication.
+- **Persistent sessions**: the refresh-token cookie is not a session cookie (it has an explicit `maxAge`), so it survives browser restarts. The session stays alive as long as the user is active within the inactivity window and the refresh token has not expired.
 
 #### Brute-Force Protection
-- `@nestjs/throttler` applies a global IP-based rate limit on the login endpoint (10 req / 60 s).
+- `@nestjs/throttler` is applied per-endpoint: login is capped at **5 req / 60 s**, refresh at **10 req / 60 s**.
 - A per-IP `LoginAttemptsService` (in-memory; swap with Redis for production) locks an IP for 15 minutes after 5 consecutive failed login attempts.
 
 #### Infinite Scroll & Pagination
@@ -48,7 +48,7 @@ docker compose up --build
 | Frontend | http://localhost:3000   |
 | Backend  | http://localhost:3001   |
 
-The backend runs in **watch mode** (`nest start --watch`) so source file changes reload automatically without rebuilding the image.
+Both services hot-reload on source changes via volume mounts — no image rebuild needed during development. The backend runs `nest start --watch`; the frontend runs `next dev`.
 
 ---
 
@@ -75,25 +75,35 @@ cd frontend && npm run lint
 
 ## Running Tests
 
-Tests run inside the same backend container via `docker compose run`. Postgres must be running first.
+### Backend
+
+Backend tests run via `docker compose run`. Postgres must be running first.
 
 ```bash
 # Start Postgres (if not already up)
 docker compose up -d postgres
 
-# Unit tests (no DB required, but inherits the service env)
+# Unit tests
 docker compose run --rm backend npm test -- --forceExit
 
 # E2E tests (hit the real Postgres)
 docker compose run --rm backend npm run test:e2e -- --forceExit
 ```
 
-### Test pyramid
+### Frontend
 
-| Layer | Command | What it covers |
-|---|---|---|
-| Unit | `npm test` | `AuthService`, `ProductsService`, `LoginAttemptsService`, `AuthController` (mocked deps) |
-| E2E | `npm run test:e2e` | Full login → products → refresh → logout flow against real Postgres |
+Frontend unit tests (Vitest + React Testing Library) run inside the `frontend` dev container — no Postgres needed.
+
+```bash
+# Start the dev container if not already running
+docker compose up -d frontend
+
+# Run tests once
+docker compose exec frontend npm run test
+
+# Watch mode (re-runs on file changes)
+docker compose exec frontend npm run test:watch
+```
 
 ---
 
@@ -147,7 +157,7 @@ A production pipeline would add: Docker image build & push, deployment to cloud,
 | `DATABASE_PASSWORD`         | `secret`         |                                       |
 | `DATABASE_NAME`             | `ecommerce_db`   |                                       |
 | `JWT_SECRET`                | –                | **Required.** Sign/verify JWTs        |
-| `JWT_EXPIRY`                | `30m`            | Access token TTL                      |
+| `ACCESS_TOKEN_EXPIRY`       | `1m`             | Access token TTL                      |
 | `REFRESH_TOKEN_EXPIRY_DAYS` | `7`              | Refresh token TTL                     |
 | `INACTIVITY_TIMEOUT_MINUTES`| `30`             | Session inactivity window             |
 | `FRONTEND_URL`              | `http://localhost:3000` | CORS allowed origin            |

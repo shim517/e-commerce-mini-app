@@ -1,5 +1,6 @@
 import axios from 'axios';
-import type { ProductPage, User } from '@/types';
+import type { User } from '@/types';
+import type { ProductFeed } from '@/domain/product';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
@@ -64,7 +65,7 @@ export const authApi = {
 export const productsApi = {
   getPage: (cursor?: number, limit = 20) =>
     api
-      .get<ProductPage>('/products', { params: { cursor, limit } })
+      .get<ProductFeed>('/products', { params: { cursor, limit } })
       .then((r) => r.data),
 };
 
