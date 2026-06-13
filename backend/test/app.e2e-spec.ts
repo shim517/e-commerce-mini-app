@@ -94,7 +94,9 @@ describe('Auth flow (e2e)', () => {
         .post('/auth/login')
         .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
 
-      const cookies = extractCookies(loginRes.headers['set-cookie'] as unknown as string[]);
+      const cookies = extractCookies(
+        loginRes.headers['set-cookie'] as unknown as string[],
+      );
 
       const res = await request(app.getHttpServer())
         .get('/products')
@@ -120,7 +122,9 @@ describe('Auth flow (e2e)', () => {
         .post('/auth/login')
         .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
 
-      const cookies = extractCookies(loginRes.headers['set-cookie'] as unknown as string[]);
+      const cookies = extractCookies(
+        loginRes.headers['set-cookie'] as unknown as string[],
+      );
 
       const res = await request(app.getHttpServer())
         .post('/auth/refresh')
@@ -144,7 +148,9 @@ describe('Auth flow (e2e)', () => {
         .post('/auth/login')
         .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
 
-      const cookies = extractCookies(loginRes.headers['set-cookie'] as unknown as string[]);
+      const cookies = extractCookies(
+        loginRes.headers['set-cookie'] as unknown as string[],
+      );
 
       const res = await request(app.getHttpServer())
         .post('/auth/logout')
@@ -165,7 +171,9 @@ describe('Auth flow (e2e)', () => {
         .post('/auth/login')
         .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
 
-      const cookies = extractCookies(loginRes.headers['set-cookie'] as unknown as string[]);
+      const cookies = extractCookies(
+        loginRes.headers['set-cookie'] as unknown as string[],
+      );
 
       await request(app.getHttpServer())
         .post('/auth/logout')

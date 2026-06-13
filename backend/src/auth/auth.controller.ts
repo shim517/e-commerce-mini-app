@@ -43,14 +43,18 @@ export class AuthController {
     const ip = (req.ip ?? req.socket.remoteAddress) as string;
 
     if (this.loginAttemptsService.isLocked(ip)) {
-      const remaining = this.loginAttemptsService.getLockoutRemainingSeconds(ip);
+      const remaining =
+        this.loginAttemptsService.getLockoutRemainingSeconds(ip);
       throw new HttpException(
         `Too many failed attempts. Try again in ${remaining}s.`,
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
 
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
     if (!user) {
       this.loginAttemptsService.recordFailure(ip);
       throw new UnauthorizedException('Invalid email or password.');
@@ -66,8 +70,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @UseGuards(ThrottlerGuard)
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<{ user: SafeUser }> {
-    const rawToken: string | undefined = (req.cookies as Record<string, string>)?.refresh_token;
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ user: SafeUser }> {
+    const rawToken: string | undefined = (req.cookies as Record<string, string>)
+      ?.refresh_token;
     if (!rawToken) throw new UnauthorizedException();
     const tokens = await this.authService.refresh(rawToken);
     this.setTokenCookies(res, tokens);
@@ -81,7 +89,8 @@ export class AuthController {
     @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const rawToken: string | undefined = (req.cookies as Record<string, string>)?.refresh_token;
+    const rawToken: string | undefined = (req.cookies as Record<string, string>)
+      ?.refresh_token;
     await this.authService.logout(req.user.userId, rawToken);
     const base = this.baseCookieOptions();
     res.clearCookie('access_token', base);
@@ -97,7 +106,10 @@ export class AuthController {
 
   private setTokenCookies(res: Response, tokens: AuthTokens): void {
     const base = this.baseCookieOptions();
-    res.cookie('access_token', tokens.accessToken, { ...base, maxAge: 30 * 60 * 1000 });
+    res.cookie('access_token', tokens.accessToken, {
+      ...base,
+      maxAge: 30 * 60 * 1000,
+    });
     res.cookie('refresh_token', tokens.refreshToken, {
       ...base,
       maxAge: tokens.refreshExpiryDays * 24 * 60 * 60 * 1000,
@@ -105,6 +117,10 @@ export class AuthController {
   }
 
   private baseCookieOptions(): CookieOptions {
-    return { httpOnly: true, secure: this.configService.get<boolean>('secureCookie'), sameSite: 'lax' };
+    return {
+      httpOnly: true,
+      secure: this.configService.get<boolean>('secureCookie'),
+      sameSite: 'lax',
+    };
   }
 }

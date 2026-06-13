@@ -4,7 +4,8 @@ import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import { GetProductsDto } from './dto/get-products.dto';
 
-const makeProduct = (id: number): Product => ({ id, name: `Product ${id}` } as Product);
+const makeProduct = (id: number): Product =>
+  ({ id, name: `Product ${id}` }) as Product;
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -85,7 +86,9 @@ describe('ProductsService', () => {
 
       await service.findPage({ cursor: 42, limit: 10 } as GetProductsDto);
 
-      expect(mockQb.where).toHaveBeenCalledWith('p.id > :cursor', { cursor: 42 });
+      expect(mockQb.where).toHaveBeenCalledWith('p.id > :cursor', {
+        cursor: 42,
+      });
     });
   });
 });

@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  INestApplication,
+  ValidationPipe,
+  CanActivate,
+  ExecutionContext,
+} from '@nestjs/common';
 import * as request from 'supertest';
 import * as cookieParser from 'cookie-parser';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -18,7 +23,10 @@ const MOCK_TOKENS: AuthTokens = {
 
 class MockJwtGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    context.switchToHttp().getRequest().user = { userId: 'user-id', email: 'test@example.com' };
+    context.switchToHttp().getRequest().user = {
+      userId: 'user-id',
+      email: 'test@example.com',
+    };
     return true;
   }
 }
@@ -91,7 +99,9 @@ describe('AuthController', () => {
         .send({ email: 'test@example.com', password: 'Password1' });
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ user: { id: 'user-id', email: 'test@example.com' } });
+      expect(res.body).toEqual({
+        user: { id: 'user-id', email: 'test@example.com' },
+      });
       const cookies = res.headers['set-cookie'] as unknown as string[];
       expect(cookies).toEqual(
         expect.arrayContaining([
@@ -127,11 +137,19 @@ describe('AuthController', () => {
 
     it.each([
       { body: {}, label: 'empty body' },
-      { body: { email: 'not-an-email', password: 'Password1' }, label: 'invalid email format' },
-      { body: { email: 'test@example.com', password: '123' }, label: 'password too short' },
+      {
+        body: { email: 'not-an-email', password: 'Password1' },
+        label: 'invalid email format',
+      },
+      {
+        body: { email: 'test@example.com', password: '123' },
+        label: 'password too short',
+      },
       { body: { email: 'test@example.com' }, label: 'missing password' },
     ])('returns 400 for $label', async ({ body }) => {
-      const res = await request(app.getHttpServer()).post('/auth/login').send(body);
+      const res = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send(body);
       expect(res.status).toBe(400);
     });
   });

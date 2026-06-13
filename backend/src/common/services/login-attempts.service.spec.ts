@@ -19,10 +19,13 @@ describe('LoginAttemptsService', () => {
     { failures: 3, expected: false },
     { failures: 4, expected: false },
     { failures: 5, expected: true },
-  ])('isLocked is $expected after $failures failure(s)', ({ failures, expected }) => {
-    for (let i = 0; i < failures; i++) service.recordFailure(IP);
-    expect(service.isLocked(IP)).toBe(expected);
-  });
+  ])(
+    'isLocked is $expected after $failures failure(s)',
+    ({ failures, expected }) => {
+      for (let i = 0; i < failures; i++) service.recordFailure(IP);
+      expect(service.isLocked(IP)).toBe(expected);
+    },
+  );
 
   it('isLocked returns false and clears the record after the lockout period expires', () => {
     jest.useFakeTimers();

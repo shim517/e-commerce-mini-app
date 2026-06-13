@@ -32,7 +32,10 @@ export class UsersService implements OnApplicationBootstrap {
     return this.repo.save(user);
   }
 
-  async validatePassword(plainPassword: string, hash: string): Promise<boolean> {
+  async validatePassword(
+    plainPassword: string,
+    hash: string,
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hash);
   }
 }

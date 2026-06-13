@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
@@ -82,20 +81,26 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(MOCK_USER);
       usersService.validatePassword.mockResolvedValue(true);
 
-      await expect(service.validateUser('test@example.com', 'pass')).resolves.toBe(MOCK_USER);
+      await expect(
+        service.validateUser('test@example.com', 'pass'),
+      ).resolves.toBe(MOCK_USER);
     });
 
     it('returns null when the password is wrong', async () => {
       usersService.findByEmail.mockResolvedValue(MOCK_USER);
       usersService.validatePassword.mockResolvedValue(false);
 
-      await expect(service.validateUser('test@example.com', 'wrong')).resolves.toBeNull();
+      await expect(
+        service.validateUser('test@example.com', 'wrong'),
+      ).resolves.toBeNull();
     });
 
     it('returns null when the user does not exist', async () => {
       usersService.findByEmail.mockResolvedValue(null);
 
-      await expect(service.validateUser('nobody@example.com', 'pass')).resolves.toBeNull();
+      await expect(
+        service.validateUser('nobody@example.com', 'pass'),
+      ).resolves.toBeNull();
     });
   });
 
@@ -106,8 +111,15 @@ describe('AuthService', () => {
 
       const result = await service.login(MOCK_USER);
 
-      expect(refreshTokensService.create).toHaveBeenCalledWith('user-uuid', expect.any(String), 7);
-      expect(jwtService.sign).toHaveBeenCalledWith({ sub: 'user-uuid', email: 'test@example.com' });
+      expect(refreshTokensService.create).toHaveBeenCalledWith(
+        'user-uuid',
+        expect.any(String),
+        7,
+      );
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: 'user-uuid',
+        email: 'test@example.com',
+      });
       expect(result).toMatchObject({
         accessToken: 'jwt-token',
         refreshExpiryDays: 7,
@@ -129,22 +141,31 @@ describe('AuthService', () => {
         token: makeToken({ expiresAt: new Date(Date.now() - 1000) }),
         message: 'Session expired. Please log in again.',
       },
-    ])('throws UnauthorizedException when $scenario', async ({ token, message }) => {
-      refreshTokensService.hash.mockReturnValue('hash');
-      refreshTokensService.findByTokenHash.mockResolvedValue(token);
-      configService.get.mockReturnValue(30);
+    ])(
+      'throws UnauthorizedException when $scenario',
+      async ({ token, message }) => {
+        refreshTokensService.hash.mockReturnValue('hash');
+        refreshTokensService.findByTokenHash.mockResolvedValue(token);
+        configService.get.mockReturnValue(30);
 
-      await expect(service.refresh('raw')).rejects.toThrow(message);
-    });
+        await expect(service.refresh('raw')).rejects.toThrow(message);
+      },
+    );
 
     it('throws UnauthorizedException and deletes the token when inactivity timeout is exceeded', async () => {
-      const staleToken = makeToken({ lastActivityAt: new Date(Date.now() - 31 * 60 * 1000) });
+      const staleToken = makeToken({
+        lastActivityAt: new Date(Date.now() - 31 * 60 * 1000),
+      });
       refreshTokensService.hash.mockReturnValue('hash');
       refreshTokensService.findByTokenHash.mockResolvedValue(staleToken);
       configService.get.mockReturnValue(30);
 
-      await expect(service.refresh('raw')).rejects.toThrow('Session expired due to inactivity.');
-      expect(refreshTokensService.deleteById).toHaveBeenCalledWith('token-uuid');
+      await expect(service.refresh('raw')).rejects.toThrow(
+        'Session expired due to inactivity.',
+      );
+      expect(refreshTokensService.deleteById).toHaveBeenCalledWith(
+        'token-uuid',
+      );
     });
 
     it('returns tokens and updates last activity for a valid token', async () => {
@@ -157,7 +178,9 @@ describe('AuthService', () => {
 
       const result = await service.refresh('raw');
 
-      expect(refreshTokensService.updateLastActivity).toHaveBeenCalledWith('token-uuid');
+      expect(refreshTokensService.updateLastActivity).toHaveBeenCalledWith(
+        'token-uuid',
+      );
       expect(result).toMatchObject({
         accessToken: 'jwt-token',
         user: { id: 'user-uuid', email: 'test@example.com' },
@@ -171,14 +194,18 @@ describe('AuthService', () => {
 
       await service.logout('user-uuid', 'raw-token');
 
-      expect(refreshTokensService.deleteByTokenHash).toHaveBeenCalledWith('token-hash');
+      expect(refreshTokensService.deleteByTokenHash).toHaveBeenCalledWith(
+        'token-hash',
+      );
       expect(refreshTokensService.deleteAllForUser).not.toHaveBeenCalled();
     });
 
     it('deletes all tokens for the user when rawToken is absent', async () => {
       await service.logout('user-uuid', undefined);
 
-      expect(refreshTokensService.deleteAllForUser).toHaveBeenCalledWith('user-uuid');
+      expect(refreshTokensService.deleteAllForUser).toHaveBeenCalledWith(
+        'user-uuid',
+      );
       expect(refreshTokensService.deleteByTokenHash).not.toHaveBeenCalled();
     });
   });

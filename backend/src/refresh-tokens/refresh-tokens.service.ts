@@ -11,12 +11,21 @@ export class RefreshTokensService {
     private readonly repo: Repository<RefreshToken>,
   ) {}
 
-  async create(userId: string, rawToken: string, expiryDays: number): Promise<RefreshToken> {
+  async create(
+    userId: string,
+    rawToken: string,
+    expiryDays: number,
+  ): Promise<RefreshToken> {
     const tokenHash = this.hash(rawToken);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiryDays);
 
-    const token = this.repo.create({ userId, tokenHash, lastActivityAt: new Date(), expiresAt });
+    const token = this.repo.create({
+      userId,
+      tokenHash,
+      lastActivityAt: new Date(),
+      expiresAt,
+    });
     return this.repo.save(token);
   }
 

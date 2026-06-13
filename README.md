@@ -31,12 +31,6 @@ A full-stack e-commerce product catalog built with **Next.js**, **NestJS**, and 
 - Configurable `limit` clamped to `[5, 50]`.
 - Frontend uses **React Query `useInfiniteQuery`** + **Intersection Observer** to trigger next-page fetches when the bottom sentinel enters the viewport.
 
-#### SOLID in NestJS
-- **Single Responsibility**: each module (`auth`, `users`, `refresh-tokens`, `products`) owns one domain concern.
-- **Open/Closed**: guards and interceptors extend behaviour (activity tracking, rate limiting) without modifying core service logic.
-- **Liskov / Interface Segregation**: repository interfaces (TypeORM's `Repository<T>`) are injected through NestJS DI; services depend on abstractions.
-- **Dependency Inversion**: `AuthService` depends on `UsersService` and `RefreshTokensService` interfaces, not on concrete implementations.
-
 ---
 
 ## Running Locally (Docker)
@@ -55,6 +49,27 @@ docker compose up --build
 | Backend  | http://localhost:3001   |
 
 The backend runs in **watch mode** (`nest start --watch`) so source file changes reload automatically without rebuilding the image.
+
+---
+
+## Linting
+
+Run ESLint in each workspace using Docker (no local Node.js required):
+
+```bash
+# Backend
+docker run --rm -v "$(pwd)/backend:/app" -w /app node:20-alpine sh -c "npm ci --silent && npm run lint"
+
+# Frontend
+docker run --rm -v "$(pwd)/frontend:/app" -w /app node:20-alpine sh -c "npm ci --silent && npm run lint"
+```
+
+Or without Docker if dependencies are already installed:
+
+```bash
+cd backend && npm run lint
+cd frontend && npm run lint
+```
 
 ---
 

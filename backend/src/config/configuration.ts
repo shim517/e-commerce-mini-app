@@ -20,7 +20,13 @@ export default () => ({
   },
 
   session: {
-    refreshTokenExpiryDays: parseInt(process.env.REFRESH_TOKEN_EXPIRY_DAYS ?? '7', 10),
-    inactivityTimeoutMinutes: parseInt(process.env.INACTIVITY_TIMEOUT_MINUTES ?? '30', 10),
+    refreshTokenExpiryDays: parseInt(
+      process.env.REFRESH_TOKEN_EXPIRY_DAYS ?? '7',
+      10,
+    ),
+    inactivityTimeoutMinutes: parseInt(
+      process.env.INACTIVITY_TIMEOUT_MINUTES ?? '30',
+      10,
+    ),
   },
 });
