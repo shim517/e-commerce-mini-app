@@ -18,7 +18,7 @@ import { LoginAttemptsService } from '../common/services/login-attempts.service'
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('jwt.secret'),
-        signOptions: { expiresIn: config.get<string>('jwt.expiry') },
+        signOptions: { expiresIn: config.get<string>('jwt.accessTokenExpiry') },
       }),
     }),
   ],

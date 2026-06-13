@@ -16,7 +16,7 @@ export default () => ({
 
   jwt: {
     secret: process.env.JWT_SECRET ?? 'dev-secret-change-in-production',
-    expiry: process.env.JWT_EXPIRY ?? '30m',
+    accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY ?? '30m',
   },
 
   session: {

@@ -168,9 +168,10 @@ describe('AuthService', () => {
       );
     });
 
-    it('returns tokens and updates last activity for a valid token', async () => {
+    it('rotates the refresh token and returns new tokens for a valid token', async () => {
       refreshTokensService.hash.mockReturnValue('hash');
       refreshTokensService.findByTokenHash.mockResolvedValue(makeToken());
+      refreshTokensService.create.mockResolvedValue(makeToken());
       configService.get.mockImplementation((key: string) =>
         key === 'session.inactivityTimeoutMinutes' ? 30 : 7,
       );
@@ -178,11 +179,16 @@ describe('AuthService', () => {
 
       const result = await service.refresh('raw');
 
-      expect(refreshTokensService.updateLastActivity).toHaveBeenCalledWith(
-        'token-uuid',
+      expect(refreshTokensService.deleteById).toHaveBeenCalledWith('token-uuid');
+      expect(refreshTokensService.create).toHaveBeenCalledWith(
+        'user-uuid',
+        expect.any(String),
+        7,
       );
+      expect(result.refreshToken).not.toBe('raw');
       expect(result).toMatchObject({
         accessToken: 'jwt-token',
+        refreshExpiryDays: 7,
         user: { id: 'user-uuid', email: 'test@example.com' },
       });
     });

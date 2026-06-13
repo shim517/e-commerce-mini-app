@@ -81,19 +81,22 @@ export class AuthService {
     const user = await this.usersService.findById(token.userId);
     if (!user) throw new UnauthorizedException();
 
-    await this.refreshTokensService.updateLastActivity(token.id);
+    const refreshExpiryDays = this.configService.get<number>(
+      'session.refreshTokenExpiryDays',
+    )!;
+
+    await this.refreshTokensService.deleteById(token.id);
+    const newRefreshToken = randomBytes(64).toString('hex');
+    await this.refreshTokensService.create(user.id, newRefreshToken, refreshExpiryDays);
 
     const accessToken = this.jwtService.sign({
       sub: user.id,
       email: user.email,
     });
-    const refreshExpiryDays = this.configService.get<number>(
-      'session.refreshTokenExpiryDays',
-    )!;
 
     return {
       accessToken,
-      refreshToken: rawToken,
+      refreshToken: newRefreshToken,
       refreshExpiryDays,
       user: { id: user.id, email: user.email },
     };
