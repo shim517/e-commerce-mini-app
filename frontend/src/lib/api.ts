@@ -2,6 +2,13 @@ import axios from 'axios';
 import type { User } from '@/types';
 import type { ProductFeed } from '@/domain/product';
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Session expired');
+    this.name = 'SessionExpiredError';
+  }
+}
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
   withCredentials: true, // send httpOnly cookies on every request
@@ -27,7 +34,6 @@ api.interceptors.response.use(
     }
 
     if (isRefreshing) {
-      // Queue this request until the refresh finishes
       return new Promise((resolve, reject) => {
         pendingQueue.push({
           resolve: () => resolve(api(original)),
@@ -43,10 +49,10 @@ api.interceptors.response.use(
       await api.post('/auth/refresh');
       drainQueue();
       return api(original);
-    } catch (refreshError) {
-      drainQueue(refreshError);
-      if (typeof window !== 'undefined') window.location.href = '/login';
-      return Promise.reject(refreshError);
+    } catch {
+      const expired = new SessionExpiredError();
+      drainQueue(expired);
+      return Promise.reject(expired);
     } finally {
       isRefreshing = false;
     }

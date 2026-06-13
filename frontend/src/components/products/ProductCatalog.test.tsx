@@ -22,6 +22,7 @@ function makeViewModel(overrides: Partial<ProductCatalogViewModel> = {}): Produc
     isLoading: false,
     isFetchingMore: false,
     isError: false,
+    error: null,
     hasMore: false,
     fetchMore: vi.fn(),
     retry: vi.fn(),

@@ -8,13 +8,14 @@ export interface ProductCatalogViewModel {
   isLoading: boolean;
   isFetchingMore: boolean;
   isError: boolean;
+  error: Error | null;
   hasMore: boolean;
   fetchMore: () => void;
   retry: () => void;
 }
 
 export function useProductCatalog(pageSize: number): ProductCatalogViewModel {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error, refetch } =
     useInfiniteQuery<ProductFeed>({
       queryKey: ['products', pageSize],
       queryFn: ({ pageParam }) =>
@@ -29,6 +30,7 @@ export function useProductCatalog(pageSize: number): ProductCatalogViewModel {
     isLoading,
     isFetchingMore: isFetchingNextPage,
     isError,
+    error: error as Error | null,
     hasMore: hasNextPage ?? false,
     fetchMore: () => { void fetchNextPage(); },
     retry: () => { void refetch(); },
